@@ -1,33 +1,343 @@
 package com.anthonytranphan;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Scanner;
 
-/**
- * Hello world!
- *
- */
 public class App 
 {
-    public static void main( String[] args )
+	private static Connection connection = null;
+	private static Statement statement = null;
+	private static Scanner scanner = new Scanner(System.in);
+	private static int input;
+	
+    public static void main( String[] args ) throws SQLException
     {
 		try {
-			Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/employee", "root", "password");
-			Statement st= con.createStatement();
-	    	ResultSet rs= st.executeQuery("SELECT * FROM Persons WHERE city = \"Los Angeles\"");
-	    	rs.next();
-	    	
-	    	String LastName= rs.getString("LastName");
-	    	String FirstName= rs.getString("FirstName");
-	    	String City= rs.getString("City");
-	    	
-	    	System.out.println(FirstName+ " "+ LastName+ " "+ City);
-	    	
-	    	st.close();
-	    	con.close();
+			connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/lab4", "root", "password");
+			statement = connection.createStatement();
+			
+			while(true) {
+				showTransactions();
+				System.out.print("Enter a number: ");
+				input = scanner.nextInt();
+				scanner.nextLine(); // consume the extra "\n" that scanner.nextInt() doesn't consume
+				
+				switch(input) {
+					case 1:
+						System.out.print("Start Location Name: ");
+						String startLocationName1 = scanner.nextLine().trim();
+						
+						System.out.print("Destination Name: ");
+						String destinationName1 = scanner.nextLine().trim();
 
+						System.out.print("Date (YYYY-MM-DD): ");
+						String date1 = scanner.nextLine().trim();
+						
+						showSchedule(startLocationName1, destinationName1, date1);
+						
+						break;
+					case 2:
+						System.out.println("Trip #: ");
+						String tripNum2 = scanner.nextLine().trim();
+						
+						System.out.print("Date (YYYY-MM-DD): ");
+						String date2 = scanner.nextLine().trim();
+						
+						System.out.println("Scheduled Start Time: ");
+						String scheduledStartTime2 = scanner.nextLine().trim();
+						
+						deleteTrip(tripNum2, date2, scheduledStartTime2);
+						
+						break;
+					case 3:
+						System.out.println("Trip #: ");
+						String tripNum3 = scanner.nextLine().trim();
+						
+						System.out.print("Date (YYYY-MM-DD): ");
+						String date3 = scanner.nextLine().trim();
+						
+						System.out.println("Scheduled Start Time: ");
+						String scheduledStartTime3 = scanner.nextLine().trim();
+												
+						System.out.println("Scheduled Arrival Time: ");
+						String scheduledArrivalTime3 = scanner.nextLine().trim();
+						
+						System.out.println("Driver Name: ");
+						String driverName3 = scanner.nextLine().trim();
+						
+						System.out.println("Bus ID: ");
+						String busID3 = scanner.nextLine().trim();
+						
+						addTrip(tripNum3, date3, scheduledStartTime3, scheduledArrivalTime3, driverName3, busID3);
+						
+						break;
+					case 4:
+						System.out.println("Trip #: ");
+						String tripNum4 = scanner.nextLine().trim();
+						
+						System.out.print("Date (YYYY-MM-DD): ");
+						String date4 = scanner.nextLine().trim();
+						
+						System.out.println("Scheduled Start Time: ");
+						String scheduledStartTime4 = scanner.nextLine().trim();
+						
+						System.out.print("New Driver: ");
+						String newDriver4 = scanner.nextLine().trim();
+						
+						changeDriver(tripNum4, date4, scheduledStartTime4, newDriver4); 
+						
+						break;
+					case 5:
+						System.out.println("Trip #: ");
+						String tripNum5 = scanner.nextLine().trim();
+						
+						System.out.print("Date (YYYY-MM-DD): ");
+						String date5 = scanner.nextLine().trim();
+						
+						System.out.println("Scheduled Start Time: ");
+						String scheduledStartTime5 = scanner.nextLine().trim();
+						
+						System.out.print("New Bus ID: ");
+						String busID5 = scanner.nextLine().trim();
+						
+						changeBus(tripNum5, date5, scheduledStartTime5, busID5);
+
+						break;
+					case 6:
+						System.out.println("Trip #: ");
+						String tripNum6 = scanner.nextLine().trim();
+						
+						displayStops(tripNum6);
+						
+						break;
+					case 7:
+						System.out.println("Driver Name: ");
+						String driverName7 = scanner.nextLine().trim();
+						
+						System.out.print("Date (YYYY-MM-DD): ");
+						String date7 = scanner.nextLine().trim();
+						
+						weeklySchedule(driverName7, date7);
+						
+						break;
+					case 8:
+						System.out.println("Driver Name: ");
+						String driverName8 = scanner.nextLine().trim();
+						
+						System.out.println("Driver Telephone #: ");
+						String driverTelephoneNum8 = scanner.nextLine().trim();
+						
+						addDrive(driverName8, driverTelephoneNum8);
+
+						break;
+					case 9:
+						System.out.println("Bus ID: ");
+						String busID9 = scanner.nextLine().trim();
+						
+						System.out.println("Model: ");
+						String model9 = scanner.nextLine().trim();
+						
+						System.out.println("Year: ");
+						String year9 = scanner.nextLine().trim();
+						
+						addBus(busID9, model9, year9);
+						
+						break;
+					case 10:
+						System.out.println("Bus ID: ");
+						String busID10 = scanner.nextLine().trim();
+						
+						deleteBus(busID10);
+						
+						break;
+					case 11:
+						System.out.println("Trip #: ");
+						String tripNum11 = scanner.nextLine().trim();
+						
+						System.out.print("Date (YYYY-MM-DD): ");
+						String date11 = scanner.nextLine().trim();
+						
+						System.out.println("Scheduled Start Time: ");
+						String scheduledStartTime11 = scanner.nextLine().trim();
+						
+						insertTrip(tripNum11, date11, scheduledStartTime11);
+
+						break;
+					case 12:
+						System.exit(0);
+					default:
+						System.out.println("Invalid option. Try again");
+				}
+			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} finally {
+			statement.close();
+	    	connection.close();
+	    	scanner.close();
 		}
+    }
+    
+    private static void insertTrip(String tripNum, String date, String scheduledStartTime) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void deleteBus(String busID) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void addBus(String busID, String model, String year) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void addDrive(String driverName, String driverTelephoneNum) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void weeklySchedule(String driverName, String date) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void displayStops(String tripNum) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void changeBus(String tripNum, String date, String scheduledStartTime, String busID) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void changeDriver(String tripNum, String date, String scheduledStartTime, String newDriver) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void addTrip(String tripNum, String date, String scheduledStartTime, String scheduledArrivalTime,
+			String driverName, String busID) {
+		// TODO Auto-generated method stub
+		boolean flag = true;
+		while(flag) {
+			String query = "INSERT INTO TripOffering VALUES ('" + tripNum + "', '" + date + "', '" + scheduledStartTime + "', '" + scheduledArrivalTime +
+			"', '" + driverName + "', '" + busID + "')";
+			try {
+				int result = statement.executeUpdate(query);
+				if(result == 0) {
+					System.out.println("Unable to add trip.");
+				}
+				else {
+					System.out.println("Trip successfully added.");
+				}
+			} catch (SQLException e) {
+				// TODO: handle exception
+				e.printStackTrace();
+			}
+
+			System.out.println("Do you want to add another trip? (yes/no): ");
+			String input = scanner.nextLine();
+			input.trim().toLowerCase();
+			
+			if(input.equals("yes") || input.equals("y")) {
+				System.out.println("Trip #: ");
+				tripNum = scanner.nextLine().trim();
+				
+				System.out.print("Date (YYYY-MM-DD): ");
+				date = scanner.nextLine().trim();
+				
+				System.out.println("Scheduled Start Time: ");
+				scheduledStartTime = scanner.nextLine().trim();
+										
+				System.out.println("Scheduled Arrival Time: ");
+				scheduledArrivalTime = scanner.nextLine().trim();
+				
+				System.out.println("Driver Name: ");
+				driverName = scanner.nextLine().trim();
+				
+				System.out.println("Bus ID: ");
+				busID = scanner.nextLine().trim();
+			}
+			else {
+				flag = false;
+			}
+		}
+	}
+
+	private static void deleteTrip(String tripNum, String date, String scheduledStartTime) {
+		// TODO Auto-generated method stub
+		String query = "DELETE FROM TripOffering as T "
+					 + "WHERE T.TripNumber = '" + tripNum + "' AND "
+					 		+ "T.Date = '" + date + "' AND "
+					 		+ " T.ScheduledStartTime = '" + scheduledStartTime + "'";
+		try {
+			int result = statement.executeUpdate(query);
+			if(result == 0) {
+				System.out.println("Unable to delete trip");
+			}
+			else {
+				System.out.println("Trip successfully deleted");
+			}
+			System.out.println("---------------------------------------------------------");
+
+		} catch (SQLException e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+	}
+
+	private static void showSchedule(String startLocationName, String destinationName, String date) {
+		// TODO Auto-generated method stub
+		String query = "SELECT * "
+					 + "FROM Trip, TripOffering "
+					 + "WHERE Trip.TripNumber = TripOffering.TripNumber AND "
+					 		+ "Trip.StartLocationName LIKE '" + startLocationName + "' AND "
+					 		+ "Trip.DestinationName LIKE '" + destinationName + "' AND "
+					 		+ "TripOffering.Date = '" + date + "' "
+					 + "ORDER BY TripOffering.ScheduledStartTime";
+		try {
+			ResultSet result = statement.executeQuery(query);
+			ResultSetMetaData resultColumns = result.getMetaData();
+			
+			while(result.next()) {
+				String row = "";
+				for(int i = 1; i < resultColumns.getColumnCount(); ++i) {
+					row += (result.getInt(i) + " ");
+				}
+				System.out.println(row);
+			}
+			
+			result.close();
+			System.out.println("---------------------------------------------------------");
+		
+		} catch (SQLException e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+	}
+
+	private static void showTransactions() {
+    	System.out.println("Available Transactions: \n"
+    			+ "1. Show schedule\n"
+    			+ "2. Delete a trip\n"
+    			+ "3. Add a trip\n"
+    			+ "4. Change a driver\n"
+    			+ "5. Change a bus\n"
+    			+ "6. Display stops\n"
+    			+ "7. Display weekly schedule\n"
+    			+ "8. Add a drive\n"
+    			+ "9. Add a bus\n"
+    			+ "10. Delete a bus\n"
+    			+ "11. Insert trip\n"
+    			+ "12. Exit");
     }
 }
