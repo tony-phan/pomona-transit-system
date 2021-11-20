@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Iterator;
 import java.util.Scanner;
 
 public class App 
@@ -184,48 +185,239 @@ public class App
 		}
     }
     
+    private static void showTransactions() {
+    	System.out.println("Available Transactions: \n"
+    			+ "1. Show schedule\n"
+    			+ "2. Delete a trip\n"
+    			+ "3. Add a trip\n"
+    			+ "4. Change a driver\n"
+    			+ "5. Change a bus\n"
+    			+ "6. Display stops\n"
+    			+ "7. Display weekly schedule\n"
+    			+ "8. Add a drive\n"
+    			+ "9. Add a bus\n"
+    			+ "10. Delete a bus\n"
+    			+ "11. Insert trip\n"
+    			+ "12. Exit");
+    }
+    
     private static void insertTrip(String tripNum, String date, String scheduledStartTime) {
 		// TODO Auto-generated method stub
-		
+    	String query = "SELECT T.ScheduledArrivalTime " +
+    			  	   "FROM TripOffering as T " +
+					   "WHERE T.TripNumber = " + tripNum + " AND " +
+					   "T.Date = '" + date + "' AND " + 
+					   "T. ScheduledStartTime = '" + scheduledStartTime + "'";
+    	try {
+			ResultSet result = statement.executeQuery(query);
+			String arriveTime = "";
+			if(result == null) {
+				System.out.println("Could not insert a new trip");
+			}
+			else {
+				result.next();
+				arriveTime = result.getString(1);
+				System.out.println("The arrival time: " + arriveTime);
+    			System.out.print("Enter number of stops: ");
+    			int numStops = Integer.parseInt(scanner.nextLine());
+    			for(int i = 1; i <= numStops; ++i) {
+    				String temp;
+    				if(i == numStops) {
+    					System.out.println("The scheduled arrival time for stop " + numStops + " is " + arriveTime);
+    					temp = arriveTime;
+    				}
+    				else {
+    					System.out.print("The scheduled arrival time for stop " + i + "is ");
+    					temp = scanner.nextLine().trim();
+    				}
+    				
+    				System.out.print("Actual Start Time For Stop " + i + ": ");
+    				String start1 = scanner.nextLine().trim();
+    				
+    				System.out.print("Actual Arrival Time For Stop " + i + ": ");
+    				String arrive1 = scanner.nextLine().trim();
+    				
+    				System.out.print("Number of Passengers In For Stop " + i + ": ");
+    				int passengersIn = Integer.parseInt(scanner.nextLine());
+    				
+    				System.out.print("Number of Passengers Out For Stop " + i + ": ");
+    				int passengersOut = Integer.parseInt(scanner.nextLine());
+
+    				query = "INSERT INTO ActualTripStopInfo VALUES('" + tripNum + 
+    						"', '" + date + "', '" + scheduledStartTime + "', '" + i +
+    						"', '" + temp + "', '" + start1 + "', '" + arrive1 + 
+    						"', '" + passengersIn + "', '" + passengersOut + "')";
+    				int res = statement.executeUpdate(query);
+    				if(res == 0) {
+    					System.out.println("Could not add a new trip");
+    				}
+    				else {
+    					System.out.println("Successfully inserted a new trip");
+    				}
+    			}
+			}
+			System.out.println("---------------------------------------------------------");
+			
+		} catch (SQLException e) {
+			System.out.println(e);
+		}
 	}
 
 	private static void deleteBus(String busID) {
 		// TODO Auto-generated method stub
-		
+		String query = "DELETE FROM Bus " + 
+			   	   	   "WHERE BusID = " + busID;
+		try {
+			int result = statement.executeUpdate(query);
+			if(result == 0) {
+				System.out.println("Could not delete the bus");
+			} 
+			else {
+				System.out.println("Bus successfully deleted");
+			}
+			System.out.println("---------------------------------------------------------");
+			
+		} catch (SQLException e) {
+			System.out.println(e);
+		}
 	}
 
 	private static void addBus(String busID, String model, String year) {
 		// TODO Auto-generated method stub
-		
+		String query = "INSERT INTO Bus (BusID, Model, Year) " + 
+				   	   "VALUES ('" + busID + "', '" + model + "', '" + year + "')";
+		try {
+			int result = statement.executeUpdate(query);
+			if(result == 0) {
+				System.out.println("Could not add a new bus");
+			} 
+			else {
+				System.out.println("Bus successfully added");
+			}
+			System.out.println("---------------------------------------------------------");
+			
+		} catch (SQLException e) {
+			System.out.println(e);
+		}
 	}
 
 	private static void addDrive(String driverName, String driverTelephoneNum) {
 		// TODO Auto-generated method stub
-		
+		String query = "INSERT INTO Driver (DriverName, DriverTelephoneNumber) " + 
+					   "VALUES ('" + driverName + "', '" + driverTelephoneNum + "')";
+		try {
+			int result = statement.executeUpdate(query);
+			if(result == 0) {
+				System.out.println("Could not add the driver");
+			} 
+			else {
+				System.out.println("Driver successfully added");
+			}
+			System.out.println("---------------------------------------------------------");
+			
+		} catch (SQLException e) {
+			System.out.println(e);
+		}
 	}
 
 	private static void weeklySchedule(String driverName, String date) {
 		// TODO Auto-generated method stub
-		
+		String query = "SELECT Date, ScheduledStartTime, ScheduledArrivalTime " + 
+					   "FROM TripOffering " + 
+					   "WHERE DriverName = '" + driverName + "' AND " +
+					   "Date BETWEEN '" + date + "' AND DATE_ADD('" + date + "', INTERVAL 7 DAY)";
+		try {
+			ResultSet result = statement.executeQuery(query);
+			ResultSetMetaData resultColumns = result.getMetaData();
+			
+			while(result.next()) {
+				String row = "";
+				for(int i = 1; i < resultColumns.getColumnCount(); ++i) {
+					row += (result.getInt(i) + " ");
+				}
+				System.out.println(row);
+			}
+			
+			result.close();
+			System.out.println("---------------------------------------------------------");
+			
+		} catch (SQLException e) {
+			// TODO: handle exception
+			System.out.println(e);
+		}
 	}
 
 	private static void displayStops(String tripNum) {
 		// TODO Auto-generated method stub
-		
+		String query = "SELECT * " + 
+					   "FROM TripStopInfo as T " + 
+					   "WHERE T.TripNumber = " + tripNum;
+		try {
+			ResultSet result = statement.executeQuery(query);
+			ResultSetMetaData resultColumns = result.getMetaData();
+			
+			while(result.next()) {
+				String row = "";
+				for(int i = 1; i < resultColumns.getColumnCount(); ++i) {
+					row += (result.getInt(i) + " ");
+				}
+				System.out.println(row);
+			}
+			
+			result.close();
+			System.out.println("---------------------------------------------------------");
+			
+		} catch (SQLException e) {
+			// TODO: handle exception
+			System.out.println(e);
+		}
 	}
 
 	private static void changeBus(String tripNum, String date, String scheduledStartTime, String busID) {
 		// TODO Auto-generated method stub
-		
+		String query = "UPDATE TripOffering" + 
+					   "SET BusID = '" + busID + "' " + 
+					   "WHERE TripNumber = '" + tripNum + "' AND " +
+					   "Date = '" + date + "' AND " + 
+					   "ScheduledStartTime = '" + scheduledStartTime + "'";
+		try {
+			int result = statement.executeUpdate(query);
+			if(result == 0) {
+				System.out.println("Could not change the bus");
+			} 
+			else {
+				System.out.println("Bus sucessfully changed.");
+			}
+			System.out.println("---------------------------------------------------------");
+			
+		} catch (SQLException e) {
+			System.out.println(e);
+		}
 	}
 
 	private static void changeDriver(String tripNum, String date, String scheduledStartTime, String newDriver) {
 		// TODO Auto-generated method stub
-		
+		String query = "UPDATE TripOffering" + 
+					   "SET DriverName = '" + newDriver + "' " + 
+					   "WHERE TripNumber = '" + tripNum + "' AND " +
+					   "Date = '" + date + "' AND " + 
+					   "ScheduledStartTime = '" + scheduledStartTime + "'";
+		try {
+			int result = statement.executeUpdate(query);
+			if(result == 0) {
+				System.out.println("Could not change the driver");
+			} 
+			else {
+				System.out.println("Bus driver sucessfully changed.");
+			}
+			System.out.println("---------------------------------------------------------");
+			
+		} catch (SQLException e) {
+			System.out.println(e);
+		}
 	}
 
-	private static void addTrip(String tripNum, String date, String scheduledStartTime, String scheduledArrivalTime,
-			String driverName, String busID) {
+	private static void addTrip(String tripNum, String date, String scheduledStartTime, String scheduledArrivalTime, String driverName, String busID) {
 		// TODO Auto-generated method stub
 		boolean flag = true;
 		while(flag) {
@@ -241,7 +433,7 @@ public class App
 				}
 			} catch (SQLException e) {
 				// TODO: handle exception
-				e.printStackTrace();
+				System.out.println("Unable to add trip.");
 			}
 
 			System.out.println("Do you want to add another trip? (yes/no): ");
@@ -275,10 +467,10 @@ public class App
 
 	private static void deleteTrip(String tripNum, String date, String scheduledStartTime) {
 		// TODO Auto-generated method stub
-		String query = "DELETE FROM TripOffering as T "
-					 + "WHERE T.TripNumber = '" + tripNum + "' AND "
-					 		+ "T.Date = '" + date + "' AND "
-					 		+ " T.ScheduledStartTime = '" + scheduledStartTime + "'";
+		String query = "DELETE FROM TripOffering as T " +
+					   "WHERE T.TripNumber = '" + tripNum + "' AND " +
+					   "T.Date = '" + date + "' AND " + 
+					   " T.ScheduledStartTime = '" + scheduledStartTime + "'";
 		try {
 			int result = statement.executeUpdate(query);
 			if(result == 0) {
@@ -297,13 +489,13 @@ public class App
 
 	private static void showSchedule(String startLocationName, String destinationName, String date) {
 		// TODO Auto-generated method stub
-		String query = "SELECT * "
-					 + "FROM Trip, TripOffering "
-					 + "WHERE Trip.TripNumber = TripOffering.TripNumber AND "
-					 		+ "Trip.StartLocationName LIKE '" + startLocationName + "' AND "
-					 		+ "Trip.DestinationName LIKE '" + destinationName + "' AND "
-					 		+ "TripOffering.Date = '" + date + "' "
-					 + "ORDER BY TripOffering.ScheduledStartTime";
+		String query = "SELECT * " +
+					   "FROM Trip, TripOffering " +
+					   "WHERE Trip.TripNumber = TripOffering.TripNumber AND " +
+					   "Trip.StartLocationName LIKE '" + startLocationName + "' AND " + 
+					   "Trip.DestinationName LIKE '" + destinationName + "' AND " + 
+					   "TripOffering.Date = '" + date + "' " + 
+					   "ORDER BY TripOffering.ScheduledStartTime";
 		try {
 			ResultSet result = statement.executeQuery(query);
 			ResultSetMetaData resultColumns = result.getMetaData();
@@ -324,20 +516,4 @@ public class App
 			e.printStackTrace();
 		}
 	}
-
-	private static void showTransactions() {
-    	System.out.println("Available Transactions: \n"
-    			+ "1. Show schedule\n"
-    			+ "2. Delete a trip\n"
-    			+ "3. Add a trip\n"
-    			+ "4. Change a driver\n"
-    			+ "5. Change a bus\n"
-    			+ "6. Display stops\n"
-    			+ "7. Display weekly schedule\n"
-    			+ "8. Add a drive\n"
-    			+ "9. Add a bus\n"
-    			+ "10. Delete a bus\n"
-    			+ "11. Insert trip\n"
-    			+ "12. Exit");
-    }
 }
