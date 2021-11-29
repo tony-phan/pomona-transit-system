@@ -227,7 +227,7 @@ public class App
     					temp = arriveTime;
     				}
     				else {
-    					System.out.print("The scheduled arrival time for stop " + i + "is ");
+    					System.out.print("The scheduled arrival time for stop " + i + " is ");
     					temp = scanner.nextLine().trim();
     				}
     				
@@ -289,7 +289,7 @@ public class App
 		try {
 			int result = statement.executeUpdate(query);
 			if(result == 0) {
-				System.out.println("Could not add a new bus");
+				System.out.println("Bus already exists");
 			} 
 			else {
 				System.out.println("Bus successfully added");
@@ -308,7 +308,7 @@ public class App
 		try {
 			int result = statement.executeUpdate(query);
 			if(result == 0) {
-				System.out.println("Could not add the driver");
+				System.out.println("Driver already exists");
 			} 
 			else {
 				System.out.println("Driver successfully added");
@@ -333,7 +333,7 @@ public class App
 			while(result.next()) {
 				String row = "";
 				for(int i = 1; i < resultColumns.getColumnCount(); ++i) {
-					row += (result.getInt(i) + " ");
+					row += (result.getString(i) + " ");
 				}
 				System.out.println(row);
 			}
@@ -375,7 +375,7 @@ public class App
 
 	private static void changeBus(String tripNum, String date, String scheduledStartTime, String busID) {
 		// TODO Auto-generated method stub
-		String query = "UPDATE TripOffering" + 
+		String query = "UPDATE TripOffering " + 
 					   "SET BusID = '" + busID + "' " + 
 					   "WHERE TripNumber = '" + tripNum + "' AND " +
 					   "Date = '" + date + "' AND " + 
@@ -397,7 +397,7 @@ public class App
 
 	private static void changeDriver(String tripNum, String date, String scheduledStartTime, String newDriver) {
 		// TODO Auto-generated method stub
-		String query = "UPDATE TripOffering" + 
+		String query = "UPDATE TripOffering " + 
 					   "SET DriverName = '" + newDriver + "' " + 
 					   "WHERE TripNumber = '" + tripNum + "' AND " +
 					   "Date = '" + date + "' AND " + 
@@ -503,7 +503,7 @@ public class App
 			while(result.next()) {
 				String row = "";
 				for(int i = 1; i < resultColumns.getColumnCount(); ++i) {
-					row += (result.getInt(i) + " ");
+					row += (result.getString(i) + " ");
 				}
 				System.out.println(row);
 			}
